@@ -11,12 +11,13 @@ namespace MapReduceCudafy
 
         static void Main(string[] args)
         {
-            string path = @"C:\Users\mylif\Downloads\cantrbry\alice29.txt";
+            //string path = @"C:\Users\mylif\Downloads\cantrbry\alice29.txt";
+            string path = @"C:\Users\mylif\Desktop\asyoulik.txt";
             Lines = ReadLines(path);
             var obj = new CudafyMapReduce();
             var res = obj.Run(Lines);
 
-            foreach(var elem in res)
+            foreach (var elem in res)
             {
                 Console.WriteLine($"Word: {elem.Key} has freqeuncy: {elem.Value}");
             }
