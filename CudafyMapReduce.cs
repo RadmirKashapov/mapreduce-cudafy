@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Project1
+namespace MapReduceCudafy
 {
     [CudafyDummy]
     public struct InputStruct

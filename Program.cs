@@ -1,31 +1,45 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 
-namespace CudaTest
+namespace MapReduceCudafy
 {
     class Program
     {
+        private static List<string> Lines;
+
         static void Main(string[] args)
         {
-            var o = new CudafyMapReduce();
+            string path = @"C:\Users\mylif\Downloads\cantrbry\alice29.txt";
+            Lines = ReadLines(path);
+            var obj = new CudafyMapReduce();
+            var res = obj.Run(Lines);
 
-            string text = System.IO.File.ReadAllText(@"C:\Users\mylif\Downloads\cantrbry\alice29.txt");
-
-            string[] sentences = text.Split(new char[] { '\n' });
-
-            for (int i = 0; i < sentences.Length; i++)
+            foreach(var elem in res)
             {
-                var res = o.Run(sentences[i]);
-                for (int i = 0; i < res.Length; i++)
+                Console.WriteLine($"Word: {elem.Key} has freqeuncy: {elem.Value}");
+            }
+
+            Console.ReadKey();
+        }
+
+        private static List<string> ReadLines(string path)
+        {
+            Lines = new List<string>();
+            using (var fileStream = File.Open(path, FileMode.Open, FileAccess.Read))
+            {
+                using (var streamReader = new StreamReader(fileStream))
                 {
-                    if (res[i].Value != 0)
+                    string line;
+                    while ((line = streamReader.ReadLine()) != null)
                     {
-                        byte[] bytes = BitConverter.GetBytes(res[i]);
-                        Console.Write(BitConverter.ToString(bytes)+" and ");
-                        Console.Write(res[i].Value);
+                        Lines.Add(line);
                     }
                 }
             }
-            Console.ReadKey();
+            return Lines;
         }
+        
     }
 }

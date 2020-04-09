@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29920.165
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapReduceCudafy", "MapReduceCudafy.csproj", "{6AB26BC7-8439-4422-B847-2692C165BD63}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6AB26BC7-8439-4422-B847-2692C165BD63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AB26BC7-8439-4422-B847-2692C165BD63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AB26BC7-8439-4422-B847-2692C165BD63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AB26BC7-8439-4422-B847-2692C165BD63}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {69D046A4-F1B9-4666-9F09-77E64E56AC2A}
+	EndGlobalSection
+EndGlobal
