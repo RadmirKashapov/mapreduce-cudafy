@@ -29,7 +29,7 @@ namespace MapReduceCudafy
 
     public class CudafyMapReduce
     {
-        private static ConcurrentDictionary<string, int> freqeuncyDictionary;
+        private static Dictionary<string, int> freqeuncyDictionary = new Dictionary<string, int>();
         private static readonly char[] separators = { ' ' };
         [Cudafy]
         public struct CudafyStringKeyIntValue
@@ -65,21 +65,12 @@ namespace MapReduceCudafy
         public static CudafyStringKeyIntValue[] Reduce(GThread thread, CudafyStringKeyIntValue[] intermediateValues)
         {
             var tid = thread.threadIdx.x;
-            //for (int i = 0; i < intermediateValues.Length - 1; i++)
-            //    for (int j = i + 1; j < intermediateValues.Length; j++)
-            //    {
-            //        res = StrCmp(thread, intermediateValues[i].Key, intermediateValues[j].Key);
-            //        if (res > 0)
-            //        {
-            //            var tmp = intermediateValues[i];
-            //            intermediateValues[i] = intermediateValues[j];
-            //            intermediateValues[j] = tmp;
-            //        }
-            //    }
 
             timSort(intermediateValues, intermediateValues.Length);
 
-            var arr = GetUniqueArray(thread, intermediateValues);
+            var arr = new CudafyStringKeyIntValue[intermediateValues.Length];
+            
+            findFrequency(thread, intermediateValues, intermediateValues.Length, arr);
 
             return arr;
         }
@@ -96,20 +87,22 @@ namespace MapReduceCudafy
             }
         }
 
-        public ConcurrentDictionary<string, int> Run(List<string> lines)
+        public Dictionary<string, int> Run(List<string> lines)
         {
+
             GPGPU gpu = CudafyHost.GetDevice(eGPUType.Emulator);
-            CudafyTranslator.Language = eLanguage.Cuda;
-            eArchitecture arch = gpu.GetArchitecture();         
+            CudafyTranslator.Language = eLanguage.OpenCL;
+            eArchitecture arch = gpu.GetArchitecture();
             CudafyModule km = CudafyTranslator.Cudafy(arch);
             if (km == null || !km.TryVerifyChecksums())
                 km = CudafyTranslator.Cudafy(ePlatform.Auto, eArchitecture.sm_20, typeof(InputStruct), typeof(CudafyStringKeyIntValue), typeof(CudafyMapReduce));
             gpu.LoadModule(km);
 
-            freqeuncyDictionary = new ConcurrentDictionary<string, int>();
+            //freqeuncyDictionary = new ConcurrentDictionary<string, int>();
 
             Parallel.ForEach(lines, line =>
             {
+
                 var words = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
                 var input = new InputStruct[words.Length];
@@ -125,7 +118,10 @@ namespace MapReduceCudafy
                 for (int i = 0; i < input.Length; i++)
                 {
                     if (HashDict.ContainsKey(words[i].GetHashCode()))
+                    {
+                        input[i].Value = words[i].GetHashCode();
                         continue;
+                    }
                     HashDict.Add(words[i].GetHashCode(), words[i]);
                     input[i].Value = words[i].GetHashCode();
                 }
@@ -140,7 +136,12 @@ namespace MapReduceCudafy
                 for (int i = 0; i < output.Length; i++)
                 {
                     if (output[i].Value == 0 || output[i].Key == 0) continue;
-                    freqeuncyDictionary.AddOrUpdate(HashDict[output[i].Key], output[i].Value, (key, oldValue) => oldValue + output[i].Value);
+                    if (freqeuncyDictionary.ContainsKey(HashDict[output[i].Key]))
+                    {
+                        freqeuncyDictionary[HashDict[output[i].Key]] = freqeuncyDictionary[HashDict[output[i].Key]] + output[i].Value;
+                        continue;
+                    }
+                    freqeuncyDictionary.Add(HashDict[output[i].Key], output[i].Value);
                 }
             });
             return freqeuncyDictionary;
@@ -300,6 +301,33 @@ namespace MapReduceCudafy
                     // arr[mid+1....right]  
                     merge(arr, left, mid, right);
                 }
+            }
+        }
+        [Cudafy]
+        private static void findFrequency(GThread thread, CudafyStringKeyIntValue[] A, int n, CudafyStringKeyIntValue[] map)
+        {
+            var x = thread.threadIdx.x;
+            // search space is A[low..high]
+            int low = 0, high = n - 1;
+
+            // run till search space is exhausted
+            while (low <= high)
+            {
+                // A[low..high] consists of only one element,
+                // then update its count
+                if (A[low].Key == A[high].Key)
+                {
+                    map[low].Key = A[low].Key;
+                    map[low].Value += high - low + 1;
+
+                    // Now discard A[low..high] and continue searching
+                    // in A[high+1.. n-1] for A[low]
+                    low = high + 1;
+                    high = n - 1;
+                }
+                else
+                    // reduce the search space
+                    high = (low + high) / 2;
             }
         }
     }
