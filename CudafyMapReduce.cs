@@ -90,8 +90,8 @@ namespace MapReduceCudafy
         public Dictionary<string, int> Run(List<string> lines)
         {
 
-            GPGPU gpu = CudafyHost.GetDevice(eGPUType.Emulator);
-            CudafyTranslator.Language = eLanguage.OpenCL;
+            GPGPU gpu = CudafyHost.GetDevice(eGPUType.Cuda);
+            CudafyTranslator.Language = eLanguage.Cuda;
             eArchitecture arch = gpu.GetArchitecture();
             CudafyModule km = CudafyTranslator.Cudafy(arch);
             if (km == null || !km.TryVerifyChecksums())
